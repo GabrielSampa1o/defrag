@@ -3,6 +3,13 @@
   "resourceVersion": "1.6",
   "name": "Defrag",
   "resources": [
+    {"id":{"name":"spr_jogador_parado","path":"sprites/spr_jogador_parado/spr_jogador_parado.yy",},"order":0,},
+    {"id":{"name":"obj_bloco","path":"objects/obj_bloco/obj_bloco.yy",},"order":2,},
+    {"id":{"name":"obj_entidade","path":"objects/obj_entidade/obj_entidade.yy",},"order":0,},
+    {"id":{"name":"scr_ini","path":"scripts/scr_ini/scr_ini.yy",},"order":0,},
+    {"id":{"name":"obj_jogador","path":"objects/obj_jogador/obj_jogador.yy",},"order":1,},
+    {"id":{"name":"spr_bloco","path":"sprites/spr_bloco/spr_bloco.yy",},"order":2,},
+    {"id":{"name":"spr_jogador_correndo","path":"sprites/spr_jogador_correndo/spr_jogador_correndo.yy",},"order":1,},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":0,},
   ],
   "Options": [
@@ -40,6 +47,7 @@
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Animation Curves","folderPath":"folders/Animation Curves.yy","order":12,},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Notes","folderPath":"folders/Notes.yy","order":13,},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Extensions","folderPath":"folders/Extensions.yy","order":14,},
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"jogador","folderPath":"folders/Sprites/jogador.yy","order":1,},
   ],
   "AudioGroups": [
     {"resourceType":"GMAudioGroup","resourceVersion":"1.3","name":"audiogroup_default","targets":-1,},
