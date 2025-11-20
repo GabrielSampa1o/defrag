@@ -9,7 +9,10 @@
   "solid": false,
   "visible": true,
   "managed": true,
-  "spriteMaskId": null,
+  "spriteMaskId": {
+    "name": "spr_base",
+    "path": "sprites/spr_base/spr_base.yy",
+  },
   "persistent": false,
   "parentObjectId": {
     "name": "obj_entidade",
