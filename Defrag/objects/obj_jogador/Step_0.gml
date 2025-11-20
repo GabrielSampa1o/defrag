@@ -71,6 +71,9 @@ switch(estado){
 		//personagem caindo
 		if(velv > 0){
 			sprite_index = spr_jogador_caindo;
+			if(image_index >= image_number -1){
+				image_index = image_number -1;
+			}
 		}else{
 			//personagem pulando
 			sprite_index = spr_jogador_pulando;
