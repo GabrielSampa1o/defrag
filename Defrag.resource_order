@@ -1,0 +1,11 @@
+{
+  "FolderOrderSettings":[],
+  "ResourceOrderSettings":[
+    {"name":"obj_android","order":3,"path":"objects/obj_android/obj_android.yy",},
+    {"name":"obj_bloco","order":2,"path":"objects/obj_bloco/obj_bloco.yy",},
+    {"name":"obj_jogador","order":1,"path":"objects/obj_jogador/obj_jogador.yy",},
+    {"name":"spr_bloco","order":2,"path":"sprites/spr_bloco/spr_bloco.yy",},
+    {"name":"spr_inimigo_android","order":3,"path":"sprites/spr_inimigo_android/spr_inimigo_android.yy",},
+    {"name":"spr_jogador_correndo","order":1,"path":"sprites/spr_jogador_correndo/spr_jogador_correndo.yy",},
+  ],
+}
