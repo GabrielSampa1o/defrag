@@ -27,7 +27,7 @@ invencivel = false;
 invencivel_timer = room_speed * 3; 
 tempo_invencivel = invencivel_timer;
 
-dash_delay = room_speed * 2;
+dash_delay = 0; //room_speed * 2;
 dash_timer = 0;
 dash_aereo_timer = 0;
 dash_aereo = true;
@@ -35,3 +35,12 @@ dash_aereo = true;
 velh = 0
 velv = 0
 
+// --- MELHORIAS DE PULO (Game Feel) ---
+
+// Coyote Time: Tempo que ainda pode pular depois de sair do chão
+coyote_max = 6; // Duração em frames (6 frames = 0.1s a 60fps)
+coyote_timer = 0;
+
+// Jump Buffering: Tempo que o jogo "lembra" que apertou pular antes de tocar o chão
+buffer_max = 6; // Duração em frames
+buffer_timer = 0;

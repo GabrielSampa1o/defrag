@@ -9,6 +9,21 @@ esquerda = keyboard_check(ord("A"));
 pulo = keyboard_check_pressed(ord("K"));
 dash = keyboard_check_pressed(ord("L"));
 
+// LÓGICA DO BUFFER E COYOTE (NOVO) ---
+
+// Controle do Coyote Time (Estou no chão? Enche o timer. Saí? Diminui.)
+if (chao) {
+    coyote_timer = coyote_max;
+} else {
+    if (coyote_timer > 0) coyote_timer--;
+}
+
+// Controle do Jump Buffer (Apertei pulo? Enche o timer. O tempo passa? Diminui.)
+if (pulo) {
+    buffer_timer = buffer_max;
+}
+if (buffer_timer > 0) buffer_timer--;
+
 //diminuindo o dash timer
 if(dash_timer > 0) dash_timer--;
 
@@ -37,13 +52,25 @@ switch(estado){
 		
 		//condição de troca de estado
 		//movendo
-		if (direita || esquerda){
-			estado = "movendo";
-		}else if(pulo || velv !=0){
-			estado = "pulando";
-			velv = (-max_velv * pulo);
-			image_index = 0;
-		}else if(dash && dash_timer	<= 0 ){
+	// CONDIÇÃO DE PULO (Buffer + Coyote)
+        if (buffer_timer > 0 && coyote_timer > 0) {
+            estado = "pulando";
+            velv = -max_velv;
+            image_index = 0;
+            
+            // Importante: Zerar os timers para não pular de novo sem querer
+            buffer_timer = 0;
+            coyote_timer = 0;
+        }
+        // Condição de Cair (Só cai se acabou o coyote time)
+        else if (!chao && coyote_timer <= 0) {
+             estado = "pulando"; // Ou estado "caindo" se tiver
+             image_index = 0;
+        }
+        // Condição de Mover
+        else if (velh != 0) {
+            estado = "movendo";
+        }else if(dash && dash_timer	<= 0 ){
 			estado = "dash";
 			image_index = 0;
 		}
@@ -59,18 +86,30 @@ switch(estado){
 		sprite_index = spr_jogador_correndo;
 		
 		// condicao de troca de estado
-		 //parado
-		 if (abs(velh) < .1){
-			estado = "parado";
-			velh = 0;
-		 }else if(pulo || !chao){
-			estado = "pulando";
-			velv = (-max_velv * pulo);
-			image_index = 0;
-		}else if(dash){
-			estado = "dash";
-			image_index = 0;
-		}
+// CONDIÇÃO DE PULO (Buffer + Coyote)
+        if (buffer_timer > 0 && coyote_timer > 0) {
+            estado = "pulando";
+            velv = -max_velv;
+            image_index = 0;
+            
+            // Zera os timers
+            buffer_timer = 0;
+            coyote_timer = 0;
+        }
+        // Condição de Cair
+        else if (!chao && coyote_timer <= 0) {
+             estado = "pulando";
+             image_index = 0;
+        }
+        // Condição de Parar
+        else if (abs(velh) < .1) {
+            estado = "parado";
+            velh = 0;
+        }
+        else if (dash && dash_timer <= 0) {
+            estado = "dash";
+            image_index = 0;
+        }
 		
 		break;
 	}
@@ -97,6 +136,7 @@ switch(estado){
 		//condiçao de troca de estado
 		if(chao){
 			estado = "parado";
+			velv = 0;
 		}
 		
 		break;
