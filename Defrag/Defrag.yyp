@@ -15,6 +15,7 @@
     {"id":{"name":"obj_jogador","path":"objects/obj_jogador/obj_jogador.yy",},"order":1,},
     {"id":{"name":"spr_bloco","path":"sprites/spr_bloco/spr_bloco.yy",},"order":2,},
     {"id":{"name":"spr_jogador_correndo","path":"sprites/spr_jogador_correndo/spr_jogador_correndo.yy",},"order":1,},
+    {"id":{"name":"spr_jogador_dash","path":"sprites/spr_jogador_dash/spr_jogador_dash.yy",},"order":5,},
     {"id":{"name":"spr_jogador_caindo","path":"sprites/spr_jogador_caindo/spr_jogador_caindo.yy",},"order":3,},
     {"id":{"name":"spr_cam","path":"sprites/spr_cam/spr_cam.yy",},"order":4,},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":0,},

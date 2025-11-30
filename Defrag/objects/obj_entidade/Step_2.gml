@@ -1,6 +1,13 @@
  
 //Sistema de colisão e movimentacao
 
+//passando o mid velh para o velh enquanto ele for menor que o limite
+if(abs(velh) <= max_velh){
+	velh += mid_velh;
+}else{
+	velh = 0;
+}
+
 // Seu código original:
  var _velh = sign(velh); 
  var _velv = sign(velv); 

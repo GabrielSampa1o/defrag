@@ -1,13 +1,16 @@
 /// @description Insert description here
 // You can write your code in this editor
 
-var direita, esquerda, pulo;
+var direita, esquerda, pulo, dash;
 var chao = place_meeting(x, y + 1, obj_bloco);
 
 direita = keyboard_check(ord("D"));
 esquerda = keyboard_check(ord("A"));
 pulo = keyboard_check_pressed(ord("K"));
+dash = keyboard_check_pressed(ord("L"));
 
+//diminuindo o dash timer
+if(dash_timer > 0) dash_timer--;
 
 //codigo de movementacao
 velh = (direita - esquerda) * max_velh;
@@ -26,6 +29,9 @@ switch(estado){
 	#region parado
 	case "parado":{
 	
+		//parando o mid_velh
+		mid_velh = 0;
+		
 		//comportamento do estado
 		sprite_index = spr_jogador_parado
 		
@@ -36,6 +42,9 @@ switch(estado){
 		}else if(pulo || velv !=0){
 			estado = "pulando";
 			velv = (-max_velv * pulo);
+			image_index = 0;
+		}else if(dash && dash_timer	<= 0 ){
+			estado = "dash";
 			image_index = 0;
 		}
 		
@@ -54,9 +63,12 @@ switch(estado){
 		 if (abs(velh) < .1){
 			estado = "parado";
 			velh = 0;
-		 }else if(pulo || velv !=0){
+		 }else if(pulo || !chao){
 			estado = "pulando";
 			velv = (-max_velv * pulo);
+			image_index = 0;
+		}else if(dash){
+			estado = "dash";
 			image_index = 0;
 		}
 		
@@ -66,7 +78,6 @@ switch(estado){
 	#region pulado
 	case "pulando":{
 	
-		
 		
 		//personagem caindo
 		if(velv > 0){
@@ -91,6 +102,30 @@ switch(estado){
 		break;
 	}
 	#endregion pulando
+	
+	#region dash
+	case "dash":{
+		sprite_index = spr_jogador_dash;
+		
+		//velocidade
+		mid_velh = image_xscale * dash_vel;
+		velh = 0;
+		//saindo do estado
+		if (image_index >= image_number -1 || !chao){
+			estado = "parado";
+			mid_velh = 0;
+			
+			//resetando o timer do dash
+			dash_timer = dash_delay;
+		}
+		
+	
+		break;
+	}
+	
+	#endregion dash
+	
+	
 	
 	
 }
