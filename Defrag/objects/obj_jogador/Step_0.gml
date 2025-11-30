@@ -143,27 +143,51 @@ switch(estado){
 	}
 	#endregion pulando
 	
-	#region dash
-	case "dash":{
-		sprite_index = spr_jogador_dash;
-		
-		//velocidade
-		mid_velh = image_xscale * dash_vel;
-		velh = 0;
-		//saindo do estado
-		if (image_index >= image_number -1 || !chao){
-			estado = "parado";
-			mid_velh = 0;
-			
-			//resetando o timer do dash
-			dash_timer = dash_delay;
-		}
-		
-	
-		break;
-	}
-	
-	#endregion dash
+#region dash
+    case "dash":{
+        sprite_index = spr_jogador_dash; 
+        
+        // Mantém a velocidade constante durante o dash
+        mid_velh = image_xscale * dash_vel; 
+        velh = 0; 
+        velv = 0; 
+
+        // --- MELHORIA: DASH CANCEL (Pular durante o dash) ---
+        // Verifica se apertou pulo (buffer) E se pode pular (chao ou coyote)
+        // Nota: Se quiseres que ele possa pular do dash mesmo no ar (sem chão), 
+        // remove a parte "&& (chao || coyote_timer > 0)"
+        if (buffer_timer > 0 && (chao || coyote_timer > 0)) {
+            
+            estado = "pulando";
+            velv = -max_velv; // Força do pulo
+            
+            // O SEGREDO DO "FEELING":
+            // Passamos a velocidade do dash (mid_velh) para a velocidade normal (velh)
+            // Assim ele sai do dash voando, em vez de parar no ar.
+            velh = mid_velh; 
+            mid_velh = 0;
+            
+            buffer_timer = 0; // Consome o comando de pulo
+            image_index = 0;
+            break; // Sai do switch imediatamente
+        }
+        // ----------------------------------------------------
+
+        // Saindo do estado normalmente (quando a animação acaba)
+        if (image_index >= image_number - 1 || !chao){
+            estado = "parado";
+            
+            // Aqui escolhes: queres que ele pare bruscamente ou deslize?
+            // mid_velh = 0; // Para bruscamente (estilo clássico)
+            velh = mid_velh; // Continua o movimento (estilo fluido)
+            mid_velh = 0;
+            
+            velv = 0; 
+            dash_timer = dash_delay;
+        }
+        break;
+    }
+    #endregion
 	
 	
 	
