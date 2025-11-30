@@ -174,33 +174,51 @@ switch(estado){
     
     #region dash
     case "dash":{
-        sprite_index = spr_jogador_dash; 
+		sprite_index = spr_jogador_dash; 
         
         mid_velh = image_xscale * dash_vel; 
         velh = 0; 
         velv = 0; 
 
-        // DASH CANCEL (Pular no meio do dash)
-        if (buffer_timer > 0 && (chao || coyote_timer > 0)) {
+        // --- DASH CANCEL NO AR (ATUALIZADO) ---
+        
+        // Verificamos:
+        // 1. Apertou pulo (buffer_timer > 0)
+        // 2. E: (Está no chão/coyote) OU (Tem pulos sobrando E tem a habilidade)
+        var vou_pular = buffer_timer > 0;
+        var posso_pular_chao = (chao || coyote_timer > 0);
+        var posso_pular_ar = (pulos_restantes > 0 && global.tem_pulo_duplo);
+
+        if (vou_pular && (posso_pular_chao || posso_pular_ar)) {
+            
             estado = "pulando";
             velv = -max_velv; 
-            velh = mid_velh; // Transfere inércia
+            
+            // Transfere o impulso do dash para o pulo (Super Jump)
+            velh = mid_velh; 
             mid_velh = 0;
-            buffer_timer = 0; 
+            
+            buffer_timer = 0; // Consome o input
             image_index = 0;
-            break; 
+            
+            // IMPORTANTE: Se pulou no ar, gasta um pulo!
+            if (!posso_pular_chao) {
+                pulos_restantes--;
+            }
+            
+            break; // Sai do switch imediatamente
         }
 
-        // Fim do Dash
+        // --- Fim do Dash ---
         if (image_index >= image_number - 1){
-            // Decide para onde ir dependendo de onde terminou o dash
+            
             if (chao) {
                 estado = "parado";
             } else {
-                estado = "pulando"; // Se acabou no ar, volta a cair
+                estado = "pulando"; // Se acabou no ar, cai
             }
             
-            // Transfere inércia ao acabar (movimento fluido)
+            // Inércia
             velh = mid_velh; 
             mid_velh = 0;
             
@@ -208,6 +226,7 @@ switch(estado){
             dash_timer = dash_delay;
         }
         break;
-    }
+        }
+        
     #endregion
 }
