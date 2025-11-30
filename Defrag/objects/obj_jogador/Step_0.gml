@@ -17,8 +17,13 @@ var pulo_solto = keyboard_check_released(ord("K"));
 
 // Controle do Coyote Time (Estou no chão? Enche o timer. Saí? Diminui.)
 if (chao) {
+	pulos_restantes = max_pulos;
     coyote_timer = coyote_max;
 } else {
+	// Se caí da plataforma sem pular, perco o primeiro pulo
+    if (coyote_timer <= 0 && pulos_restantes == max_pulos) {
+        pulos_restantes = max_pulos - 1;
+    }
     if (coyote_timer > 0) coyote_timer--;
 }
 
@@ -67,7 +72,9 @@ switch(estado){
             estado = "pulando";
             velv = -max_velv;
             image_index = 0;
-            
+			
+            pulos_restantes--; // GASTA O PRIMEIRO PULO
+			
             // Importante: Zerar os timers para não pular de novo sem querer
             buffer_timer = 0;
             coyote_timer = 0;
@@ -102,6 +109,8 @@ switch(estado){
             velv = -max_velv;
             image_index = 0;
             
+			pulos_restantes--; // GASTA O PRIMEIRO PULO
+			
             // Zera os timers
             buffer_timer = 0;
             coyote_timer = 0;
@@ -127,6 +136,17 @@ switch(estado){
 	#region pulado
 	case "pulando":{
 	
+		// --- LÓGICA DO PULO DUPLO ---
+        // Se apertei pulo (buffer) E tenho pulos sobrando
+        if (buffer_timer > 0 && pulos_restantes > 0) {
+            velv = -max_velv; // Impulsiona de novo
+            pulos_restantes--; // Gasta o pulo extra
+            image_index = 0;   // Reinicia a animação
+            buffer_timer = 0;  // Consome o input
+            
+            // Opcional: Criar um efeito visual aqui
+            // instance_create_layer(x, y, layer, obj_efeito_pulo);
+        }
 		
 		//personagem caindo
 		if(velv > 0){

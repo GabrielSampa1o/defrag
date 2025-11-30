@@ -16,6 +16,9 @@ dash_vel = 6;
 
 mostra_estado = true;
 
+// --- PULO DUPLO ---
+max_pulos = 2;       // Total de pulos permitidos
+pulos_restantes = 0; // Quantos eu tenho agora
 
 combo = 0;
 dano = noone;
