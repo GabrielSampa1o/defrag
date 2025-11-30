@@ -1,23 +1,14 @@
 {
   "resourceType": "GMObject",
   "resourceVersion": "1.0",
-  "name": "obj_jogador",
-  "spriteId": {
-    "name": "spr_jogador_parado",
-    "path": "sprites/spr_jogador_parado/spr_jogador_parado.yy",
-  },
+  "name": "obj_game_contrroler",
+  "spriteId": null,
   "solid": false,
   "visible": true,
   "managed": true,
-  "spriteMaskId": {
-    "name": "spr_base",
-    "path": "sprites/spr_base/spr_base.yy",
-  },
-  "persistent": true,
-  "parentObjectId": {
-    "name": "obj_entidade",
-    "path": "objects/obj_entidade/obj_entidade.yy",
-  },
+  "spriteMaskId": null,
+  "persistent": false,
+  "parentObjectId": null,
   "physicsObject": false,
   "physicsSensor": false,
   "physicsShape": 1,
@@ -33,7 +24,6 @@
   "eventList": [
     {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":0,"collisionObjectId":null,},
     {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":3,"collisionObjectId":null,},
-    {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":8,"collisionObjectId":null,},
   ],
   "properties": [],
   "overriddenProperties": [],

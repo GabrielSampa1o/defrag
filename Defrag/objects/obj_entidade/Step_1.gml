@@ -3,7 +3,7 @@
 
 
 if(velh != 0) xscale = sign (velh);
-image_xscale = xscale;
+//image_xscale = xscale;
 
 //exibindo meu estatos quando o usuário mandar
 if(position_meeting(mouse_x, mouse_y, id)){

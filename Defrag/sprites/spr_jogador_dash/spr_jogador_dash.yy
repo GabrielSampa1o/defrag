@@ -44,7 +44,7 @@
     "name": "spr_jogador_dash",
     "timeUnits": 1,
     "playback": 1,
-    "playbackSpeed": 50.0,
+    "playbackSpeed": 40.0,
     "playbackSpeedType": 0,
     "autoRecord": true,
     "volume": 1.0,

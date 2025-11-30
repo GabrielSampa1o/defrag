@@ -21,6 +21,19 @@ max_velv = 6;       // Limite de velocidade de queda (terminal velocity)
 velh = 0;           // Velocidade Horizontal Atual
 velv = 0;           // Velocidade Vertical Atual
 
+
+// Configuração do Wall Jump
+wall_slide_spd = 2;      // Velocidade máxima escorregando
+wall_jump_hsp = 5;       // Força horizontal do pulo (kickback)
+wall_jump_vsp = 6;       // Força vertical do pulo (altura)
+dir_parede = 0;          // Direção da parede (1 ou -1)
+
+// Controle Visual (Para não bugar a colisão)
+xscale_visual = 1;
+
+wall_jump_delay = 0;      // Contador
+wall_jump_delay_max = 10; // Tempo que fica sem controle (em frames)
+
 // [IMPORTANTE] Variáveis que faltavam:
 massa = 1;          // Multiplicador da gravidade (usado no Step)
 mid_velh = 0;       // Velocidade extra (usada para Dash e inércia)
@@ -48,6 +61,8 @@ dash_delay = room_speed; // Tempo de espera para usar de novo (coloquei 1 seg)
 dash_timer = 0;         // Contador regressivo do delay
 dash_aereo = true;      // Se permite dash no ar (opcional)
 dash_aereo_timer = 0;
+
+veio_da_parede = false;
 
 // CONTROLE DO DASH AÉREO
 tem_dash_aereo = true; // Habilidade desbloqueada? (Se usar global, troque aqui)
@@ -81,4 +96,8 @@ gamepad_set_axis_deadzone(gamepad_slot, 0.25);
 // Defina como 'true' para testar, ou 'false' para desbloquear via itens
 global.tem_dash = true;        
 global.tem_pulo_duplo = true;  
-global.tem_ataque_aereo = true;
+global.tem_wall_slide = true;
+
+
+
+
