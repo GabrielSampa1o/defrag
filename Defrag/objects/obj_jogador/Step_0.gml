@@ -9,6 +9,10 @@ esquerda = keyboard_check(ord("A"));
 pulo = keyboard_check_pressed(ord("K"));
 dash = keyboard_check_pressed(ord("L"));
 
+
+// Verifica se SOLTOU a tecla K ou SOLTOU o botão do comando
+var pulo_solto = keyboard_check_released(ord("K"));
+
 // LÓGICA DO BUFFER E COYOTE (NOVO) ---
 
 // Controle do Coyote Time (Estou no chão? Enche o timer. Saí? Diminui.)
@@ -37,6 +41,12 @@ if(!chao){
 	}	
 }
 
+
+// --- MECÂNICA DE PULO VARIÁVEL (NOVO) ---
+// Se o jogador SOLTOU o botão E está subindo (velv negativa)
+if (pulo_solto && velv < 0) {
+    velv *= 0.5; // Corta a velocidade de subida em 50%
+}
 
 //iniciando a máquina de estados
 switch(estado){
