@@ -28,6 +28,9 @@ if(dash_timer > 0) dash_timer--;
 if (chao) {
     pulos_restantes = max_pulos;
     coyote_timer = coyote_max;
+	
+	//regarrega o dash aereo
+	dash_aereo_disponivel = true;
 } else {
     // Se caiu sem pular, perde o primeiro pulo
     if (coyote_timer <= 0 && pulos_restantes == max_pulos) {
@@ -160,9 +163,10 @@ switch(estado){
         }
         
         // Dash Aéreo (Verifica Habilidade)
-        if (dash && dash_timer <= 0 && global.tem_dash) {
-             estado = "dash";
-             image_index = 0;
+       if (dash && dash_timer <= 0 && global.tem_dash && dash_aereo_disponivel) {
+            estado = "dash";
+			image_index = 0;
+            dash_aereo_disponivel = false; // Gasta o dash aéreo para não voar infinito
         }
         break;
     }
@@ -188,8 +192,13 @@ switch(estado){
         }
 
         // Fim do Dash
-        if (image_index >= image_number - 1 || !chao){
-            estado = "parado";
+        if (image_index >= image_number - 1){
+            // Decide para onde ir dependendo de onde terminou o dash
+            if (chao) {
+                estado = "parado";
+            } else {
+                estado = "pulando"; // Se acabou no ar, volta a cair
+            }
             
             // Transfere inércia ao acabar (movimento fluido)
             velh = mid_velh; 

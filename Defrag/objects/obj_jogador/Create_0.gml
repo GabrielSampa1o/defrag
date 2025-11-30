@@ -49,6 +49,10 @@ dash_timer = 0;         // Contador regressivo do delay
 dash_aereo = true;      // Se permite dash no ar (opcional)
 dash_aereo_timer = 0;
 
+// CONTROLE DO DASH AÉREO
+tem_dash_aereo = true; // Habilidade desbloqueada? (Se usar global, troque aqui)
+dash_aereo_disponivel = true; // Se posso usar AGORA (recarrega no chão)
+
 // =========================================================
 // 5. COMBATE
 // =========================================================
