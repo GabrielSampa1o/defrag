@@ -1,1 +1,1 @@
-#macro GRAVIDADE .3
+#macro GRAVIDADE .4

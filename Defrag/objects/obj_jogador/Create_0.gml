@@ -16,8 +16,8 @@ mostra_estado = true; // Útil para Debug (desenhar o estado na tela)
 // =========================================================
 // 2. FÍSICA E MOVIMENTO
 // =========================================================
-max_velh = 4;       // Velocidade máxima horizontal andando
-max_velv = 6;       // Limite de velocidade de queda (terminal velocity)
+max_velh = 5.5;       // Velocidade máxima horizontal andando
+max_velv = 8.5;       // Limite de velocidade de queda (terminal velocity)
 velh = 0;           // Velocidade Horizontal Atual
 velv = 0;           // Velocidade Vertical Atual
 
@@ -97,7 +97,65 @@ gamepad_set_axis_deadzone(gamepad_slot, 0.25);
 global.tem_dash = true;        
 global.tem_pulo_duplo = true;  
 global.tem_wall_slide = true;
+global.tem_espada = false;
 
+// --- SISTEMA DE ARMAS ---
+// Pode ser "punho" ou "espada"
+arma_atual = "punho"; 
 
+// --- SISTEMA DE COMBATE REFINADO ---
+arma_atual = "punho"; 
 
+// Combo (0 = Jab, 1 = Direto)
+combo = 0;
+combo_max = 1; // Máximo de hits para o punho (0 e 1)
 
+// Carga
+timer_carga = 0;
+tempo_para_carregar = 20; // Frames para considerar carregado (aprox 0.3s)
+eh_ataque_carregado = false;
+
+// Sprite de preparação (Visual do "segurar botão")
+// DICA: Crie sprites onde o personagem puxa o braço para trás
+sprite_preparacao_soco = spr_jogador_carregando_soco; // Crie este sprite!
+frame_travado_soco = 4 // Qual frame ele congela enquanto carrega?
+
+sprite_preparacao_espada = spr_jogador_carregando_estocada; // Crie este sprite!
+frame_travado_espada = 4; // Qual frame ele congela?
+
+// --- SISTEMA DE CARGA ---
+timer_carga = 0;
+tempo_para_carregar = 20; // 0.3 segundos para ficar pronto
+
+// [NOVO] Limite máximo (Overheat)
+// 3 segundos (60 * 3) para segurar a carga. Se passar disso, cancela.
+tempo_limite_carga = room_speed * 3;
+
+//////////////////
+inicia_ataque = function(chao){
+	
+	if(chao){
+		estado = "ataque";
+		velh = 0;
+		image_index = 0;
+	}else{//nao estou no chao
+		if(keyboard_check(ord("S"))){
+			estado = "ataque aereo baixo"
+			velh = 0;
+			image_index = 0;
+		}else{
+			estado = "ataque aereo";
+			image_index = 0;
+		}
+		
+	}
+	
+}
+
+finaliza_ataque = function(){
+	posso = true;
+	if(dano){
+		instance_destroy(dano, false)
+		dano = noone;
+	}
+}
