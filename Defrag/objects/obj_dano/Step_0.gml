@@ -1,91 +1,88 @@
-/// @description Insert description here
-// You can write your code in this editor
+/// @description Lógica de Dano e Colisão (Final)
 
-var outro;
-var outro_lista = ds_list_create();
-var quantidade = instance_place_list(x, y, obj_entidade, outro_lista, 0);
+// 1. LISTA TEMPORÁRIA
+var lista_colisao = ds_list_create();
+var qtd = instance_place_list(x, y, obj_entidade, lista_colisao, false);
 
-
-//adicionando todo mundo que toquei na lista de dano
-for(var i=0; i < quantidade; i++){
-
-	//checando o atual
-	
-	var atual = outro_lista[| i];
-	
-	
-	//checando se o atual esta invenciel
-	if(atual.invencivel){
-		continue;
-	}
-	
-	//show_message(object_get_name(atual.object_index));
-	//checando se a colisão, n é com um filho do meu pai
-	if(object_get_parent(atual.object_index) != object_get_parent(pai.object_index)){
-	
-		//isso só vai rodar se eu puder dar dano
-		
-		//checar se eu realmente posso dar dano
-		
-		//checar se o atual já está na lista
-		var pos = ds_list_find_index(aplicar_dano, atual);
-		
-		if (pos == -1){
-			//o atual não está na minha lista de dano
-			//adiciono o atual a lista de dano
-			ds_list_add(aplicar_dano, atual);
-			
-		}
-	}
+// 2. LOOP DE COLISÃO
+for (var i = 0; i < qtd; i++) {
+    var vitima = lista_colisao[| i];
+    
+    // --- FILTROS DE SEGURANÇA ---
+    if (vitima.id == pai.id) continue;
+    if (vitima.invencivel) continue;
+    if (vitima.vida_atual <= 0) continue;
+    
+    // Verifica se já bateu nesta vítima (Memória)
+    if (ds_list_find_index(lista_acertados, vitima) != -1) continue; 
+    
+    // --- VERIFICAÇÃO DE TIMES ---
+    var pode_bater = false;
+    
+    // Pai é PLAYER -> Bate em Inimigos
+    if (pai.object_index == obj_jogador) {
+        if (object_is_ancestor(vitima.object_index, obj_inimigo_pai)) pode_bater = true;
+    }
+    // Pai é INIMIGO -> Bate no Player
+    else if (object_is_ancestor(pai.object_index, obj_inimigo_pai)) {
+        if (vitima.object_index == obj_jogador) pode_bater = true;
+    }
+    
+    // --- APLICANDO O DANO ---
+    if (pode_bater) {
+        
+        // 1. Marca como atingido
+        ds_list_add(lista_acertados, vitima);
+        
+        // 2. Tira Vida e Muda Estado
+        vitima.vida_atual -= dano;
+        vitima.estado = "hit";
+        vitima.image_index = 0;
+        
+        // [CORREÇÃO] LÓGICA DIFERENCIADA DE INVENCIBILIDADE
+        
+        // SE A VÍTIMA FOR O JOGADOR:
+        // Precisa de invencibilidade para não morrer com 1 golpe múltiplo
+        if (vitima.object_index == obj_jogador) {
+            vitima.invencivel = true;
+            
+            if (variable_instance_exists(vitima, "invencivel_timer")) {
+                vitima.tempo_invencivel = vitima.invencivel_timer;
+            } else {
+                vitima.tempo_invencivel = 60; 
+            }
+        }
+        // SE A VÍTIMA FOR INIMIGO:
+        // NÃO fica invencível. Permite combos (Jab + Direto pegarem em sequência).
+        else {
+            vitima.invencivel = false;
+            vitima.image_alpha = 1; // Garante que ele está visível
+        }
+        
+        // 3. EFEITOS ESPECÍFICOS (Screen Shake)
+        if (tremor_hit > 0) {
+            screenshake(tremor_hit);
+        }
+        
+        // Efeitos extras do Player (Pogo, etc - Opcional)
+        if (pai.object_index == obj_jogador) {
+            /*
+            with (pai) {
+                // ... lógica de pogo se quiser restaurar ...
+            }
+            */
+        }
+    }
 }
 
+// Limpa memória
+ds_list_destroy(lista_colisao);
 
-//aplicano o dano
-var tam = ds_list_size(aplicar_dano);
-for(var i = 0; i < tam; i++){
-	outro = aplicar_dano [| i].id;
-	if(outro.vida_atual > 0){
-		
-		if(outro.delay <=0){
-			outro.estado = "hit";
-			outro.image_index = 0;
-		}
-		
-		outro.vida_atual -= dano;
-		
-		//preciso checar se estou acertando o inimigo
-		//checando se sou filho do inimigo pai
-		if(object_get_parent(outro.object_index) == obj_inimigo_pai){
-			//show_debug_message("sou inimigo")
-			
-			//dando um screenshake apenas para inimigos
-			screenshake(2); 
-			
-			//garantindo que o inimigo morra
-			if(outro.vida_atual <=0){
-				outro.estado = "morto";
-			}
-
-		}
-		
-	}	
+// Destruição
+if (morrer) {
+    instance_destroy();
+} else {
+    if (!instance_exists(pai)) {
+        instance_destroy();
+    }
 }
-
-//destruindo minhas listas
-ds_list_destroy(aplicar_dano);
-ds_list_destroy(outro_lista);
-
-if(morrer){
-	instance_destroy();
-}else{
-	y = pai.y - pai.sprite_height/4;
-	
-	if(quantidade){
-		instance_destroy()
-	}
-}
-
-
-
-
-

@@ -1,9 +1,7 @@
-/// @description Insert description here
-// You can write your code in this editor
-
 /// @description Desenha o Sprite Separado da Física
 
-// Lógica para decidir para onde olhar VISUALMENTE
+// 1. LÓGICA VISUAL (WALL SLIDE FIX)
+// Mantemos essa lógica para o personagem não travar na parede
 var _olhar = 1;
 
 if (estado == "wall_slide") {
@@ -20,20 +18,15 @@ else if (velh != 0) {
     _olhar = xscale_visual;
 }
 
-// Desenha o personagem
+// 2. DESENHO FINAL
 draw_sprite_ext(
     sprite_index, 
     image_index, 
     x, 
     y, 
-    _olhar,        // AQUI ESTÁ O SEGREDO
+    _olhar,        // Direção Visual
     image_yscale, 
     image_angle, 
-    c_white, 
-    image_alpha
+    image_blend,   // [MUDANÇA] Usar image_blend permite mudar cor (vermelho/cinza)
+    image_alpha    // [IMPORTANTE] Permite a transparência (piscar)
 );
-
-
-
-
-

@@ -1,137 +1,167 @@
-/// @description Lógica Principal (Input, Estados)
+/// @description Lógica Principal (Input, Estados) - CORRIGIDO
 
 // =========================================================
-// 1. CAPTURA DE INPUTS (TECLADO + GAMEPAD)
+// 0. CONTROLE DE INVENCIBILIDADE (PISCAR)
 // =========================================================
-var direita, esquerda, pulo, dash, pulo_solto;
+if (invencivel) {
+    tempo_invencivel--;
+    // Pisca entre 0.4 e 1.0
+    image_alpha = 0.7 + 0.3 * sin(get_timer() / 50000); 
+    if (tempo_invencivel <= 0) {
+        invencivel = false;
+        image_alpha = 1;
+    }
+} else {
+    image_alpha = 1; 
+}
+
+// =========================================================
+// 1. TIMERS E CHECAGENS BÁSICAS
+// =========================================================
 var chao = place_meeting(x, y + 1, obj_bloco); 
 
-// Movimento Horizontal (Teclado OU Analógico)
-direita = keyboard_check(ord("D")) || gamepad_button_check(gamepad_slot, gp_padr) || (gamepad_axis_value(gamepad_slot, gp_axislh) > 0.2);
-esquerda = keyboard_check(ord("A")) || gamepad_button_check(gamepad_slot, gp_padl) || (gamepad_axis_value(gamepad_slot, gp_axislh) < -0.2);
-
-// Ações
-pulo = keyboard_check_pressed(ord("K")) || gamepad_button_check_pressed(gamepad_slot, gp_face1);
-dash = keyboard_check_pressed(ord("L")) || gamepad_button_check_pressed(gamepad_slot, gp_face2); 
-
-// Pulo Solto (Para controlar altura)
-pulo_solto = keyboard_check_released(ord("K")) || gamepad_button_check_released(gamepad_slot, gp_face1);
-
-
-// 1. INPUTS
-var atk_press = keyboard_check_pressed(ord("J")) || gamepad_button_check_pressed(gamepad_slot, gp_face3);
-
-// 2. GATILHO PARA ENTRAR NO ESTADO
-// Se apertou o botão e pode atacar, vai para o modo de "preparação/carga"
-if (atk_press && posso && estado != "ataque" && estado != "dash" && estado != "wall_slide") {
-    estado = "carregando";
-    velh = 0; // Para de andar instantaneamente
-    timer_carga = 0;
-    eh_ataque_carregado = false;
-    image_index = 0;
-}
-
-// --- TROCA DE ARMA ---
-var trocar_arma = keyboard_check_pressed(ord("Q")) || gamepad_button_check_pressed(gamepad_slot, gp_face4); // Botão de cima (Y/Triângulo)
-
-if (trocar_arma) {
-    // Só deixa trocar se já tiver desbloqueado a espada
-    if (global.tem_espada) {
-        
-        if (arma_atual == "punho") {
-            arma_atual = "espada";
-            // Opcional: Som de sacar espada
-            // audio_play_sound(snd_espada_draw, 1, false);
-            
-            // Opcional: Efeito visual ou texto
-            show_debug_message("Arma: Espada");
-        } 
-        else {
-            arma_atual = "punho";
-            show_debug_message("Arma: Punho");
-        }
-    }
-}
-
-// =========================================================
-// 2. LÓGICA DE TEMPORIZADORES (GAME FEEL)
-// =========================================================
-
-// Diminuindo o dash timer
 if(dash_timer > 0) dash_timer--;
-if(wall_jump_delay > 0) wall_jump_delay--; // Diminui a trava
+if(wall_jump_delay > 0) wall_jump_delay--;
 
+// =========================================================
+// 2. SISTEMA DE DANO DE CONTATO (PRIORIDADE ALTA)
+// =========================================================
+// O dano roda ANTES do movimento para ter prioridade.
+var inimigo_tocou = instance_place(x, y, obj_inimigo_pai);
 
+if (inimigo_tocou != noone && !invencivel && vida_atual > 0 && estado != "morto" && estado != "hit") {
+    
+    // Tira vida e muda estado
+    vida_atual -= 1;
+    estado = "hit";
+    image_index = 0;
+    
+    // Aplica Empurrão (Knockback)
+    // Calcula a direção contrária ao inimigo
+    var dir_empurrao = sign(x - inimigo_tocou.x);
+    if (dir_empurrao == 0) dir_empurrao = 1;
+    
+    // Força bruta no velh e velv
+    // Isso vai funcionar porque o bloco de "inputs" abaixo será ignorado
+    velh = dir_empurrao * 6;  // Força horizontal
+    velv = -4;                // Pulinho
+    mid_velh = 0;             // Zera qualquer inércia anterior
+    
+    invencivel = true;
+    tempo_invencivel = invencivel_timer;
+    screenshake(4);
+}
 
-// Coyote Time
-if (chao) {
-    pulos_restantes = max_pulos;
-    coyote_timer = coyote_max;
+// =========================================================
+// 3. CAPTURA DE INPUTS E MOVIMENTO (CONDICIONAL)
+// =========================================================
+
+// Inicializa variáveis locais zeradas
+var direita = 0;
+var esquerda = 0;
+var pulo = 0;
+var dash = 0;
+var atk_press = 0;
+var pulo_solto = 0;
+
+// [CORREÇÃO CRUCIAL] 
+// Só calcula movimento do teclado se NÃO estiver em HIT ou MORTO.
+// Isso impede que o teclado "freire" o empurrão do dano.
+if (estado != "hit" && estado != "morto") {
+
+    // --- Inputs ---
+    direita = keyboard_check(ord("D")) || gamepad_button_check(gamepad_slot, gp_padr) || (gamepad_axis_value(gamepad_slot, gp_axislh) > 0.2);
+    esquerda = keyboard_check(ord("A")) || gamepad_button_check(gamepad_slot, gp_padl) || (gamepad_axis_value(gamepad_slot, gp_axislh) < -0.2);
+    pulo = keyboard_check_pressed(ord("K")) || gamepad_button_check_pressed(gamepad_slot, gp_face1);
+    dash = keyboard_check_pressed(ord("L")) || gamepad_button_check_pressed(gamepad_slot, gp_face2); 
+    pulo_solto = keyboard_check_released(ord("K")) || gamepad_button_check_released(gamepad_slot, gp_face1);
+    atk_press = keyboard_check_pressed(ord("J")) || gamepad_button_check_pressed(gamepad_slot, gp_face3);
+    
+    // --- Troca de Arma ---
+    var trocar_arma = keyboard_check_pressed(ord("Q")) || gamepad_button_check_pressed(gamepad_slot, gp_face4);
+    if (trocar_arma && global.tem_espada) {
+        if (arma_atual == "punho") arma_atual = "espada"; else arma_atual = "punho";
+    }
 	
-	//regarrega o dash aereo
-	dash_aereo_disponivel = true;
-} else {
-    // Se caiu sem pular, perde o primeiro pulo
-    if (coyote_timer <= 0 && pulos_restantes == max_pulos) {
-        pulos_restantes = max_pulos - 1;
+	// Se estiver atacando ou carregando, fingimos que não estamos apertando para andar.
+    // Isso permite que o resto do código (combos, pulo) funcione, mas trava o pé no chão.
+    if (estado == "ataque" || estado == "carregando") {
+        direita = 0;
+        esquerda = 0;
     }
-    if (coyote_timer > 0) coyote_timer--;
-}
 
-// Jump Buffer
-if (pulo) {
-    buffer_timer = buffer_max;
-}
-if (buffer_timer > 0) buffer_timer--;
+    // --- Lógica de Movimento ---
+    if (wall_jump_delay > 0) { direita = 0; esquerda = 0; }
 
-// =========================================================
-// 3. CÁLCULO DE MOVIMENTO
-// =========================================================
+    var move_dir = (direita - esquerda);
 
-// SE a trava estiver ativa, fingimos que o jogador não está apertando nada
-if (wall_jump_delay > 0) {
-    direita = 0;
-    esquerda = 0;
-}
+    // Aceleração / Fricção
+    if (move_dir != 0) {
+        velh = lerp(velh, move_dir * max_velh, aceleracao);
+    } else {
+        velh = lerp(velh, 0, friccao);
+    }
+    
+    if (abs(velh) > 0.5) image_xscale = sign(velh);
 
-// Configuração de sensibilidade (Coloque no Create depois se quiser)
-var aceleracao = 0.8; // Quanto menor, mais "pesado"
-var friccao = 0.4;    // Quanto menor, mais "escorrega"
+    // --- Gravidade e Pulo Variável ---
+    if (!chao && estado != "dash" && estado != "wall_slide") {
+        if (velv < max_velv * 2) velv += GRAVIDADE * massa;
+        if (pulo_solto && velv < 0) velv *= 0.5; 
+    }
+    
+   // --- Gatilho de Ataque ---
+    if (atk_press && posso && estado != "ataque" && estado != "dash" && estado != "wall_slide") {
+        
+        // [CORREÇÃO] VIRAR INSTANTANEAMENTE
+        // Se estiver apertando para um lado, vira para esse lado AGORA.
+        // Ignora a velocidade atual.
+        if (direita) image_xscale = 1;
+        else if (esquerda) image_xscale = -1;
+        
+        // Atualiza também o visual para não dar "glitch" gráfico
+        if (variable_instance_exists(id, "xscale_visual")) xscale_visual = image_xscale;
+        
+        estado = "carregando"; 
+        velh = 0; 
+        timer_carga = 0; 
+        eh_ataque_carregado = false; 
+        image_index = 0;
+    }
+    
+    // --- Timers de Pulo ---
+    if (chao) {
+        pulos_restantes = max_pulos;
+        coyote_timer = coyote_max;
+        dash_aereo_disponivel = true;
+    } else {
+        if (coyote_timer <= 0 && pulos_restantes == max_pulos) pulos_restantes = max_pulos - 1;
+        if (coyote_timer > 0) coyote_timer--;
+    }
+    
+    if (pulo) buffer_timer = buffer_max;
+    if (buffer_timer > 0) buffer_timer--;
 
-// Calcula a direção que o jogador QUER ir
-var move_dir = (direita - esquerda);
-
-// Se estiver travado pelo wall jump, ignoramos a entrada
-if (wall_jump_delay > 0) move_dir = 0;
-
-// Aceleração e Fricção
-if (move_dir != 0) {
-    // Acelerar: Aproxima a velocidade atual da velocidade máxima
-    velh = lerp(velh, move_dir * max_velh, aceleracao);
-} else {
-    // Frear: Aproxima a velocidade de zero
-    velh = lerp(velh, 0, friccao);
-}
-
-// Velocidade base
-velh = (direita - esquerda) * max_velh;
-
-// Virar o sprite
-if (velh != 0) image_xscale = sign(velh);
-
-// Gravidade
-if(!chao){
-    if(velv < max_velv * 2){
-        velv += GRAVIDADE * massa;
-    }    
-    // Pulo Variável (Corta subida se soltar botão)
-    if (pulo_solto && velv < 0) {
-        velv *= 0.5; 
+} 
+// SE ESTIVER EM HIT (FÍSICA DE EMPURRÃO)
+else if (estado == "hit") {
+    // Aplica fricção suave para o empurrão (que definimos lá em cima) parar aos poucos
+    if (chao) velh = lerp(velh, 0, 0.05); // Para devagar no chão
+    else {
+        velh = lerp(velh, 0, 0.02);       // Para muito devagar no ar
+        velv += GRAVIDADE * massa;        // Gravidade continua no hit aéreo
     }
 }
+// SE ESTIVER MORTO
+else if (estado == "morto") {
+    velh = 0;
+    if (!chao) velv += GRAVIDADE * massa;
+}
 
-// Atrito no ar (diminui a inércia do wall jump com o tempo)
-mid_velh = lerp(mid_velh, 0, 0.08); // O 0.08 define quão rápido a inércia morre
+// Inércia Aérea (Sempre roda para Dash/WallJump)
+mid_velh = lerp(mid_velh, 0, 0.08); 
+
+
 
 
 // =========================================================
@@ -259,10 +289,10 @@ switch(estado){
 	#region ataque
     case "ataque":{
         
-        // [CORREÇÃO 1] TRAVAR MOVIMENTO INSTANTANEAMENTE
-        // Removemos o lerp suave. Agora é 0 absoluto.
-        // O personagem "planta" os pés no chão para bater.
-        velh = 0; 
+        // [TRAVAR MOVIMENTO]
+        // Se for o primeiro frame do ataque, zera a velocidade.
+        if (image_index < 1 && combo == 0) velh = 0;
+        else velh = lerp(velh, 0, 0.25); 
         
         // --- COMPORTAMENTO VISUAL (PUNHO/ESPADA) ---
         if (arma_atual == "punho") {
@@ -270,10 +300,9 @@ switch(estado){
                 sprite_index = spr_jogador_soco_carregado; 
                 ataque_mult = 2.5;
             } else {
-                // Combo normal
                 if (combo == 0) {
                     sprite_index = spr_jogador_soco1; 
-                    image_speed = 2; // Rápido
+                    image_speed = 2; 
                     ataque_mult = 0.8; 
                 } else if (combo == 1) {
                     sprite_index = spr_jogador_soco2;
@@ -283,7 +312,6 @@ switch(estado){
             }
         }
         else if (arma_atual == "espada") {
-            // ... (sua lógica de espada mantida) ...
              if (eh_ataque_carregado) {
                 sprite_index = spr_jogador_espada_estocada; 
                 ataque_mult = 3.0; 
@@ -293,45 +321,53 @@ switch(estado){
             }
         }
 
-        // --- CRIAÇÃO DO DANO ---
+        // --- CRIAÇÃO DO DANO (AJUSTADA) ---
         if(image_index >= 1 && dano == noone && posso){
-            dano = instance_create_layer(x + sprite_width/2, y - sprite_height/2, layer, obj_dano);
+            
+            // 1. Configura distância
+            var _dist_x = 0;
+            var _dist_y = -sprite_height/2; // Altura do peito
+            
+            if (arma_atual == "punho") {
+                _dist_x = 15; // Soco é curto
+            } 
+            else if (arma_atual == "espada") {
+                _dist_x = 30; // Espada alcança mais
+            }
+            
+            // 2. Cria hitbox na posição e direção certa
+            dano = instance_create_layer(x + (_dist_x * image_xscale), y + _dist_y, layer, obj_dano);
             dano.dano = ataque * ataque_mult;
             dano.pai = id;
+            dano.image_xscale = image_xscale; // Vira a hitbox
             
-            // Empurrão no inimigo
+            // 3. Define forças de impacto
             if (eh_ataque_carregado) {
-                dano.forca_knockback = 20;
-                screenshake(5);
+                dano.forca_knockback = 20; 
+                dano.tremor_hit = 6;
             } else {
-                dano.forca_knockback = 10;
-                screenshake(2);
+                dano.forca_knockback = 10; 
+                dano.tremor_hit = 2;
             }
             posso = false;
         }
         
-        // --- FIM DO ATAQUE (VOLTA A MOVER) ---
-        if (image_index >= image_number - 0.5){ // Sai um pouco antes do fim da anim
-            
-            // [CORREÇÃO 2] FLUIDEZ DE MOVIMENTO
-            // Se o jogador estiver segurando para andar, já sai correndo.
-            if (direita || esquerda) {
-                estado = "movendo";
-            } else {
-                estado = "parado";
-            }
+        // --- FIM DO ATAQUE ---
+        if (image_index >= image_number - 0.5){ 
+            if (direita || esquerda) estado = "movendo";
+            else estado = "parado";
             
             velh = 0;
             posso = true;
             ataque_mult = 1;
-            combo = 0; // Reseta combo
+            combo = 0; 
             eh_ataque_carregado = false; 
             image_speed = 1; 
             
             finaliza_ataque();
         }
         
-        // --- LÓGICA DE COMBO (MANTIDA) ---
+        // --- LÓGICA DE COMBO ---
         if (!eh_ataque_carregado && combo < 1) {
             if (keyboard_check_pressed(ord("J")) || gamepad_button_check_pressed(gamepad_slot, gp_face3)) {
                 ataque_buff = room_speed;
@@ -344,12 +380,10 @@ switch(estado){
             posso = true;
             if(dano) { instance_destroy(dano, false); dano = noone; }
             ataque_buff = 0;
-            
-            // Pequeno avanço APENAS na troca de soco (opcional)
             velh = image_xscale * 2; 
         }
         
-        // Cancelamentos (Dash/Queda)
+        // Cancelamentos
         if(dash && dash_timer <= 0 && global.tem_dash){
             estado = "dash"; image_index = 0; combo = 0; eh_ataque_carregado = false; image_speed = 1;
             if(dano) { instance_destroy(dano, false); dano = noone; }
@@ -362,7 +396,7 @@ switch(estado){
     }
     #endregion
 	
-#region ataque aereo
+	#region ataque aereo
     case "ataque aereo":{
         
         // 1. VISUAL
@@ -380,11 +414,22 @@ switch(estado){
         }
         
         // 3. DANO
+       // --- CRIAÇÃO DO DANO AÉREO ---
         if(image_index >= 1 && dano == noone && posso){
-            dano = instance_create_layer(x + sprite_width/2, y - sprite_height/2, layer, obj_dano);
+            
+            // Distância do aéreo (pode ser diferente do chão)
+            var _dist_x = 20; 
+            var _dist_y = -sprite_height/2;
+            
+            if (arma_atual == "espada") _dist_x = 35; // Espada aérea alcança mais
+            
+            // Cria na posição corrigida
+            dano = instance_create_layer(x + (_dist_x * image_xscale), y + _dist_y, layer, obj_dano);
+            
             dano.dano = ataque;
             dano.pai = id;
             dano.forca_knockback = 8;
+            dano.tremor_hit = 2;
             posso = false;
         }
         
@@ -586,9 +631,21 @@ switch(estado){
 	#region dash
     case "dash":{
         sprite_index = spr_jogador_dash; 
-        image_speed = 1.5; // (Ou a velocidade que você definiu)
+        image_speed = 1.5; 
         
-        // 1. DEFINIÇÃO DE DIREÇÃO E VELOCIDADE
+        // =========================================================
+        // 1. INVENCIBILIDADE (SHADOW DASH)
+        // =========================================================
+        // Torna o player imune a tudo enquanto estiver neste estado
+        invencivel = true;
+        tempo_invencivel = 2; // Mantém o timer > 0 para a lógica do topo do Step não bugar
+        
+        // Opcional: Visual de "Fantasma" (Transparente fixo, sem piscar)
+        image_alpha = 0.5; 
+
+        // =========================================================
+        // 2. DEFINIÇÃO DE DIREÇÃO E VELOCIDADE
+        // =========================================================
         var dir_dash = sign(image_xscale);
         if (dir_dash == 0) dir_dash = 1;
 
@@ -605,35 +662,26 @@ switch(estado){
         velv = 0; 
 
         // =========================================================
-        // [NOVO] INTERRUPÇÃO POR PAREDE (CRASH INTO WALL)
+        // 3. INTERRUPÇÃO POR PAREDE
         // =========================================================
-        // Verifica se tem uma parede logo à frente (na direção do dash)
         var parede_frente = place_meeting(x + dir_dash, y, obj_bloco);
 
-        // Só entra se: 1. Tocou na parede, 2. Está no ar, 3. Tem a habilidade
         if (parede_frente && !chao && global.tem_wall_slide) {
-             
              estado = "wall_slide";
-             
-             // Define de que lado está a parede para o estado wall_slide saber
-             if (dir_dash == 1) dir_parede = 1;
-             else dir_parede = -1;
-
-             // Zera a velocidade do dash IMEDIATAMENTE (para não escorregar)
+             if (dir_dash == 1) dir_parede = 1; else dir_parede = -1;
              mid_velh = 0;
              velh = 0;
-             
-             // Reseta a animação para o normal
              image_speed = 1; 
              
-             // Opcional: Efeito de impacto ou poeira
-             // instance_create_layer(x + dir_dash * 5, y, "Efeitos", obj_poeira_impacto);
+             // [IMPORTANTE] Desliga invencibilidade ao bater na parede
+             invencivel = false; 
+             image_alpha = 1;
              
-             break; // Sai do switch agora mesmo!
+             break; 
         }
 
         // =========================================================
-        // 2. DASH CANCEL (PULO)
+        // 4. DASH CANCEL (PULO)
         // =========================================================
         var vou_pular = buffer_timer > 0;
         var posso_pular_chao = (chao || coyote_timer > 0);
@@ -647,12 +695,18 @@ switch(estado){
             buffer_timer = 0; 
             image_index = 0;
             if (!posso_pular_chao) pulos_restantes--;
+            
             image_speed = 1; 
+            
+            // [IMPORTANTE] Desliga invencibilidade ao cancelar
+            invencivel = false;
+            image_alpha = 1;
+            
             break; 
         }
 
-		// =========================================================
-        // 3. FIM DO DASH (CORRIGIDO PARA COMBO)
+        // =========================================================
+        // 5. FIM DO DASH
         // =========================================================
         if (image_index >= image_number - 1){
             
@@ -667,22 +721,122 @@ switch(estado){
             mid_velh = 0;
             velv = 0; 
             
-            // [AQUI ESTÁ A MUDANÇA]
-            // Se veio da parede, NÃO aplica o cooldown (timer = 0).
-            // Assim podes dar o segundo dash imediatamente.
             if (veio_da_parede) {
                 dash_timer = 0;
-                veio_da_parede = false; // Reseta a variável para a próxima
+                veio_da_parede = false; 
             } else {
-                dash_timer = dash_delay; // Dash normal tem cooldown
+                dash_timer = dash_delay; 
             }
 
             wall_jump_delay = 0; 
             image_speed = 1; 
+            
+            // [IMPORTANTE] Desliga invencibilidade ao terminar
+            invencivel = false;
+            image_alpha = 1;
         }
         break;
     }
     #endregion
 	
+	#region hit
+    case "hit":{
+        // Configuração inicial da sprite
+        if(sprite_index != spr_jogador_levando_dano){
+            sprite_index = spr_jogador_levando_dano;
+            image_index = 0;
+        }
+        
+        // [CORREÇÃO] FRICÇÃO EM VEZ DE PARADA BRUSCA
+        // Isso permite que o 'velh = 8' que definimos lá em cima funcione,
+        // mas vá diminuindo até zero suavemente.
+        if (chao) {
+            velh = lerp(velh, 0, 0.05); // Desliza no chão
+        } else {
+            velh = lerp(velh, 0, 0.02); // Desliza mais no ar
+            velv += GRAVIDADE * massa;  // Cai se estiver no ar
+        }
+        
+    
+            // Saída do estado
+        if(vida_atual > 0){
+            if(image_index >= image_number - 1) {
+                estado = "parado";
+                
+                // [CORREÇÃO CRUCIAL]
+                // Reseta variáveis de combate para não travar o ataque depois
+                posso = true; 
+                combo = 0;
+                eh_ataque_carregado = false;
+                timer_carga = 0;
+                
+                // Destrói qualquer hitbox antiga que ficou órfã
+                if (dano) { instance_destroy(dano, false); dano = noone; }
+            }
+        }
+         else {
+            if(image_index >= image_number - 1) estado = "morto";
+        }
+        break;
+    }
+    #endregion
+	
+	#region morto
+    case "morto":{
+        
+        // =========================================================
+        // 1. CONFIGURAÇÃO INICIAL (Roda 1 vez ao entrar)
+        // =========================================================
+        if(sprite_index != spr_jogador_morrendo){
+            sprite_index = spr_jogador_morrendo;
+            image_index = 0;
+            
+            // Trava o movimento horizontal imediatamente
+            velh = 0; 
+            
+            // Game Feel: Tremor forte para sinalizar a falha
+            screenshake(6); 
+            
+            // Opcional: Efeito visual de "Desligando" (Cor escura ou Glitch)
+            image_blend = c_gray; 
+            
+            // Opcional: Som de desligamento/morte
+            // audio_play_sound(snd_game_over, 1, false);
+        }
+        
+        // =========================================================
+        // 2. FÍSICA (O corpo ainda obedece à gravidade!)
+        // =========================================================
+        // Se morrer no ar, ele deve cair até o chão
+        if (!chao) {
+            velv += GRAVIDADE * massa;
+        } else {
+            velv = 0;
+        }
+        
+        // =========================================================
+        // 3. FINALIZAÇÃO E CONTROLE
+        // =========================================================
+        
+        // Quando a animação de morte terminar...
+        if (image_index >= image_number - 1){
+            
+            // Congela no último frame (cadáver no chão)
+            image_index = image_number - 1; 
+            
+            // Avisa o controlador que a "cutscene" da morte acabou
+            // O controlador que lidará com a tela de Game Over e o Respawn na Cooler Station
+            if(instance_exists(obj_game_controller)){
+                obj_game_controller.game_over = true; 
+            } else {
+                // Fallback para testes (se não tiver controlador)
+                // game_restart(); 
+            }
+        }
+        
+        break;
+    }
+    #endregion
 }
+
 

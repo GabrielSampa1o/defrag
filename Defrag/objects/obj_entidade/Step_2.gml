@@ -1,31 +1,39 @@
- 
-//Sistema de colisão e movimentacao
+// =========================================================
+// SISTEMA DE COLISÃO E MOVIMENTO
+// =========================================================
 
-//passando o mid velh para o velh enquanto ele for menor que o limite
-if(abs(velh) <= max_velh){
-	velh += mid_velh;
-}else{
-	velh = 0;
-}
+// Aplica inércia extra se houver
+var velh_final = velh + mid_velh;
+var _dir_h = sign(velh_final);
 
-// Seu código original:
- var _velh = sign(velh); 
- var _velv = sign(velv); 
-
-// --- Colisão Horizontal ---
-repeat(abs(velh)) {
-    if (place_meeting(x + _velh, y, obj_bloco)) {
+// --- COLISÃO HORIZONTAL ---
+repeat(abs(velh_final)) {
+    
+    // Verifica APENAS Parede (obj_bloco)
+    if (place_meeting(x + _dir_h, y, obj_bloco)) {
         velh = 0;
+        mid_velh = 0;
         break;
     }
-    x += _velh; // Movimento
+    
+    // [REMOVIDO] A verificação de obj_inimigo_pai foi apagada.
+    // Agora você passa por dentro dele (o sistema de dano vai detectar o toque separadamente).
+    
+    x += _dir_h;
 }
 
-// --- Colisão Vertical ---
+// --- COLISÃO VERTICAL ---
+var _dir_v = sign(velv);
 repeat(abs(velv)) {
-    if (place_meeting(x, y + _velv, obj_bloco)) {
+    
+    // Verifica APENAS Parede (obj_bloco)
+    if (place_meeting(x, y + _dir_v, obj_bloco)) {
         velv = 0;
         break;
     }
-    y += _velv; // Movimento
+    
+    // [REMOVIDO] A verificação de obj_inimigo_pai foi apagada.
+    // Você não consegue mais pisar na cabeça do inimigo como se fosse chão.
+    
+    y += _dir_v;
 }
