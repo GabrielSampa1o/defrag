@@ -1,0 +1,1 @@
+instance_destroy(); // destroi se for muito longe
