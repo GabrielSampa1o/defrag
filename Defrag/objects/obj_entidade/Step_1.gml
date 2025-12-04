@@ -2,8 +2,9 @@
 // You can write your code in this editor
 
 
+//olhando para o lado certo
 if(velh != 0) xscale = sign (velh);
-//image_xscale = xscale;
+image_xscale = xscale;
 
 //exibindo meu estatos quando o usuário mandar
 if(position_meeting(mouse_x, mouse_y, id)){

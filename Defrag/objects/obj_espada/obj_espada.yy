@@ -3,8 +3,8 @@
   "resourceVersion": "1.0",
   "name": "obj_espada",
   "spriteId": {
-    "name": "spr_espada",
-    "path": "sprites/spr_espada/spr_espada.yy",
+    "name": "spr_item_espada",
+    "path": "sprites/spr_item_espada/spr_item_espada.yy",
   },
   "solid": false,
   "visible": true,

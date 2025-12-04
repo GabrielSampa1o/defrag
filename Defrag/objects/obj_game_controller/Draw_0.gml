@@ -1,10 +1,6 @@
 /// @description Insert description here
 // You can write your code in this editor
 
-
-/// @description Insert description here
-// You can write your code in this editor
-
 //criando a tela de game over
 
 if(game_over){
@@ -67,8 +63,3 @@ if(game_over){
 }else{
 	valor = 0;
 }
-
-
-
-
-

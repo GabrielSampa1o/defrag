@@ -9,7 +9,7 @@ event_inherited();
 // =========================================================
 // 1. VIDA E STATUS BÁSICOS
 // =========================================================
-vida_max = 30;
+vida_max = 10;
 vida_atual = vida_max;
 mostra_estado = true; // Útil para Debug (desenhar o estado na tela)
 
@@ -102,10 +102,10 @@ gamepad_slot = 0;
 gamepad_set_axis_deadzone(gamepad_slot, 0.25); 
 
 // Habilidades Globais
-global.tem_dash = true;        
-global.tem_pulo_duplo = true;  
-global.tem_wall_slide = true;
-
+global.tem_dash = false;        
+global.tem_pulo_duplo = false;  
+global.tem_wall_slide = false;
+global.tem_espada = false;
 // =========================================================
 // 8. MÉTODOS (FUNÇÕES INTERNAS)
 // =========================================================
@@ -129,5 +129,20 @@ finaliza_ataque = function(){
     if(dano){
         instance_destroy(dano, false);
         dano = noone;
+    }
+}
+
+// Método para tomar dano do Boss
+leva_dano_player = function(_qtd) {
+    if (!invencivel && vida_atual > 0) {
+        vida_atual -= _qtd;
+        invencivel = true;
+        tempo_invencivel = 60; // 1 segundo de i-frames
+        estado = "hit";
+        image_index = 0;
+        screenshake(5);
+        
+        // Se morrer
+        if (vida_atual <= 0) estado = "morto";
     }
 }

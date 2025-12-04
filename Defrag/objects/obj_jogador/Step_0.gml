@@ -1,11 +1,20 @@
-/// @description Lógica Principal (Input, Estados) - CORRIGIDO
+/// @description Lógica Principal (Input, Estados)
+
+// --- PAUSA O JOGO ---
+if (global.game_state == "pausado") {
+    image_speed = 0; // Congela a animação (o sprite para de mexer)
+	 velh = 0;
+     velv = 0;
+    exit;            // Cancela o resto deste evento (não calcula gravidade/inputs)
+} else {
+    image_speed = 1; // Garante que a animação rode se não estiver pausado
+}
 
 // =========================================================
-// 0. CONTROLE DE INVENCIBILIDADE (PISCAR)
+// 0. CONTROLE DE INVENCIBILIDADE
 // =========================================================
 if (invencivel) {
     tempo_invencivel--;
-    // Pisca entre 0.4 e 1.0
     image_alpha = 0.7 + 0.3 * sin(get_timer() / 50000); 
     if (tempo_invencivel <= 0) {
         invencivel = false;
@@ -16,47 +25,83 @@ if (invencivel) {
 }
 
 // =========================================================
-// 1. TIMERS E CHECAGENS BÁSICAS
+// 1. CHECAGEM DE CHÃO E PLATAFORMA (UNIFICADO)
 // =========================================================
+
+// Primeiro, verifica chão sólido
 var chao = place_meeting(x, y + 1, obj_bloco); 
 
+// Variável para controle de plataforma (definida antes de usar)
+var baixar = 0; 
+
+// Só lê inputs se estiver vivo
+if (estado != "hit" && estado != "morto") {
+    baixar = keyboard_check(ord("S")) || gamepad_axis_value(gamepad_slot, gp_axislv) > 0.5;
+}
+
+// Verifica Plataforma (One-Way)
+// Só considera chão se não achou parede E não está descendo E não está subindo
+if (!chao && !baixar && velv >= 0) {
+    var plat = instance_place(x, y + 1, obj_plataforma);
+    if (plat != noone) {
+        // Tolerância de +5 pixels para garantir detecção
+        if (bbox_bottom <= plat.bbox_top + 5) {
+            chao = true;
+        }
+    }
+}
+
+// Timers Globais
 if(dash_timer > 0) dash_timer--;
 if(wall_jump_delay > 0) wall_jump_delay--;
 
 // =========================================================
-// 2. SISTEMA DE DANO DE CONTATO (PRIORIDADE ALTA)
+// 2. SISTEMA DE DANO DE CONTATO (INIMIGOS E ESPINHOS)
 // =========================================================
-// O dano roda ANTES do movimento para ter prioridade.
-var inimigo_tocou = instance_place(x, y, obj_inimigo_pai);
 
-if (inimigo_tocou != noone && !invencivel && vida_atual > 0 && estado != "morto" && estado != "hit") {
+// 1. Detecta o que tocou
+var tocando_inimigo = instance_place(x, y, obj_inimigo_pai);
+var tocando_espinho = instance_place(x, y, obj_espinho);
+
+// 2. Prioridade (Se tocar nos dois, o inimigo tem prioridade)
+var perigo = noone;
+if (tocando_inimigo != noone) perigo = tocando_inimigo;
+else if (tocando_espinho != noone) perigo = tocando_espinho;
+
+// 3. Aplicação do Dano e Empurrão
+if (perigo != noone && !invencivel && vida_atual > 0 && estado != "morto" && estado != "hit") {
     
-    // Tira vida e muda estado
+    // Tira vida
     vida_atual -= 1;
     estado = "hit";
     image_index = 0;
     
-    // Aplica Empurrão (Knockback)
-    // Calcula a direção contrária ao inimigo
-    var dir_empurrao = sign(x - inimigo_tocou.x);
-    if (dir_empurrao == 0) dir_empurrao = 1;
+    // --- LÓGICA DE EMPURRÃO DIFERENCIADA ---
     
-    // Força bruta no velh e velv
-    // Isso vai funcionar porque o bloco de "inputs" abaixo será ignorado
-    velh = dir_empurrao * 6;  // Força horizontal
-    velv = -4;                // Pulinho
-    mid_velh = 0;             // Zera qualquer inércia anterior
+    // CASO A: INIMIGO (Empurra para trás)
+    if (perigo == tocando_inimigo) {
+        var dir_empurrao = sign(x - perigo.x);
+        if (dir_empurrao == 0) dir_empurrao = 1;
+        
+        velh = dir_empurrao * 6;  // Joga para longe
+        velv = -4;                // Pulinho leve
+    }
+    // CASO B: ESPINHO (Empurra para CIMA - Pogo de Dor)
+    else if (perigo == tocando_espinho) {
+        velh = 0;   // Não joga para os lados (para não cair de novo no espinho)
+        velv = -8;  // Joga forte para cima para você sair do buraco
+    }
     
+    mid_velh = 0; // Zera inércia de dash
+    
+    // Feedback
     invencivel = true;
     tempo_invencivel = invencivel_timer;
     screenshake(4);
 }
-
 // =========================================================
 // 3. CAPTURA DE INPUTS E MOVIMENTO (CONDICIONAL)
 // =========================================================
-
-// Inicializa variáveis locais zeradas
 var direita = 0;
 var esquerda = 0;
 var pulo = 0;
@@ -64,9 +109,6 @@ var dash = 0;
 var atk_press = 0;
 var pulo_solto = 0;
 
-// [CORREÇÃO CRUCIAL] 
-// Só calcula movimento do teclado se NÃO estiver em HIT ou MORTO.
-// Isso impede que o teclado "freire" o empurrão do dano.
 if (estado != "hit" && estado != "morto") {
 
     // --- Inputs ---
@@ -82,9 +124,8 @@ if (estado != "hit" && estado != "morto") {
     if (trocar_arma && global.tem_espada) {
         if (arma_atual == "punho") arma_atual = "espada"; else arma_atual = "punho";
     }
-	
-	// Se estiver atacando ou carregando, fingimos que não estamos apertando para andar.
-    // Isso permite que o resto do código (combos, pulo) funcione, mas trava o pé no chão.
+    
+    // Trava de Movimento no Ataque
     if (estado == "ataque" || estado == "carregando") {
         direita = 0;
         esquerda = 0;
@@ -95,7 +136,6 @@ if (estado != "hit" && estado != "morto") {
 
     var move_dir = (direita - esquerda);
 
-    // Aceleração / Fricção
     if (move_dir != 0) {
         velh = lerp(velh, move_dir * max_velh, aceleracao);
     } else {
@@ -110,16 +150,13 @@ if (estado != "hit" && estado != "morto") {
         if (pulo_solto && velv < 0) velv *= 0.5; 
     }
     
-   // --- Gatilho de Ataque ---
+    // --- Gatilho de Ataque ---
     if (atk_press && posso && estado != "ataque" && estado != "dash" && estado != "wall_slide") {
         
-        // [CORREÇÃO] VIRAR INSTANTANEAMENTE
-        // Se estiver apertando para um lado, vira para esse lado AGORA.
-        // Ignora a velocidade atual.
+        // Virar Instantaneamente
         if (direita) image_xscale = 1;
         else if (esquerda) image_xscale = -1;
         
-        // Atualiza também o visual para não dar "glitch" gráfico
         if (variable_instance_exists(id, "xscale_visual")) xscale_visual = image_xscale;
         
         estado = "carregando"; 
@@ -143,26 +180,20 @@ if (estado != "hit" && estado != "morto") {
     if (buffer_timer > 0) buffer_timer--;
 
 } 
-// SE ESTIVER EM HIT (FÍSICA DE EMPURRÃO)
 else if (estado == "hit") {
-    // Aplica fricção suave para o empurrão (que definimos lá em cima) parar aos poucos
-    if (chao) velh = lerp(velh, 0, 0.05); // Para devagar no chão
+    if (chao) velh = lerp(velh, 0, 0.05);
     else {
-        velh = lerp(velh, 0, 0.02);       // Para muito devagar no ar
-        velv += GRAVIDADE * massa;        // Gravidade continua no hit aéreo
+        velh = lerp(velh, 0, 0.02);
+        velv += GRAVIDADE * massa; 
     }
 }
-// SE ESTIVER MORTO
 else if (estado == "morto") {
     velh = 0;
     if (!chao) velv += GRAVIDADE * massa;
 }
 
-// Inércia Aérea (Sempre roda para Dash/WallJump)
-mid_velh = lerp(mid_velh, 0, 0.08); 
-
-
-
+// Inércia
+mid_velh = lerp(mid_velh, 0, 0.08);
 
 // =========================================================
 // 4. MÁQUINA DE ESTADOS
@@ -839,4 +870,4 @@ switch(estado){
     #endregion
 }
 
-
+if(keyboard_check(vk_enter)) game_restart();

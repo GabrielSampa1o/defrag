@@ -16,6 +16,6 @@ ataque = 2;
 timer_estado = 0;
 
 // --- VARIÁVEIS DE IA (FALTAVA ISTO) ---
-dist_aggro = 150;    // Distância para começar a perseguir
-dist_desiste = 300;  // Distância para parar de perseguir
+dist_aggro = 100;    // Distância para começar a perseguir
+dist_desiste = 150;  // Distância para parar de perseguir
 vel_perseguicao = 1.5; // Velocidade quando corre atrás

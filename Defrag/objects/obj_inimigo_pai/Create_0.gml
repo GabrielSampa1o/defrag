@@ -6,30 +6,38 @@
 // Inherit the parent event
 event_inherited();
 
-///@method leva_dano(sprite, image_index_ir_para_morto)
+
+// --- VARIÁVEIS DE IA ---
+dist_aggro = 150;    // Distância padrão para começar a perseguir
+dist_desiste = 300;  // Distância padrão para parar
+vel_perseguicao = 1.5; // Velocidade padrão
+
+// --- VARIÁVEIS DE COMBATE ---
+delay = 0;
+timer_estado = 0;
+
+// --- MÉTODOS DE ESTADO ---
+
+/// @method leva_dano(sprite, image_index_ir_para_morto)
 leva_dano = function(_sprite, _image_index){
-//iniciando o meu delay
-	delay = room_speed * 2;
-	velh = 0;
-		
-	mid_velh = 0;
-	// Troca Sprite
+    // Pausa breve após levar dano
+    delay = room_speed * 0.5; 
+    
+    // [CORREÇÃO] Zera velocidade totalmente (Sem knockback físico, apenas parada)
+    velh = 0;
+    mid_velh = 0;
+    
+    // Troca Sprite
     if (sprite_index != _sprite){
         sprite_index = _sprite;
         image_index = 0;
     }
-		
-	//consicao para sair do estado
-
-			
-	//checando se ainda tenho vida
-	// Saída do Estado
+    
+    // Saída do Estado
     if(vida_atual > 0){
-        // Se a animação acabou, volta para parado
+        // Se a animação acabou, volta para perseguir (vingativo)
         if(image_index >= image_number - 1){
-            estado = "parado"; 
-            // Dica: Se quiser que ele volte já perseguindo, mude para "perseguindo"
-            // mas cuidado para ele não te bater instantaneamente.
+            estado = "perseguindo"; 
         }
     }else{
         // Se morreu
@@ -38,18 +46,14 @@ leva_dano = function(_sprite, _image_index){
         }
     }
 }
-
-
-//criando o método de ataque
-///@method atacando()
-///@args sprite_index image_index_min image_index_max dist_x dist_y, [xscale_dano], [yscale_dano], [proximo_estado]
+/// @method atacando(...)
 atacando = function(_sprite_index, _image_index_min, _image_index_max, _dist_X, _dist_y, _xscale_dano, _yscale_dano, _proximo_estado){
     
-    // ... (seu código de inicialização igual) ...
     if(!_xscale_dano) _xscale_dano = 1;
     if(!_yscale_dano) _yscale_dano = 1;
     if(_proximo_estado == undefined) _proximo_estado = "parado";
     
+    // [CORREÇÃO] O inimigo deve parar de andar enquanto ataca
     mid_velh = 0;
     velh = 0;
     
@@ -60,15 +64,14 @@ atacando = function(_sprite_index, _image_index_min, _image_index_max, _dist_X, 
         dano = noone;
     }
     
-    // ... (código de saída do estado) ...
+    // Saída do estado
     if(image_index > image_number-1){
         estado = _proximo_estado;
     }
 
-    // CRIANDO DANO (COM PROPRIEDADES)
+    // Criando Dano
     if (image_index >= _image_index_min && dano == noone && image_index < _image_index_max && posso){
         
-        // Ajusta direção baseado no lado que o inimigo olha
         var _dir = sign(image_xscale); 
         if (_dir == 0) _dir = 1;
         
@@ -78,37 +81,36 @@ atacando = function(_sprite_index, _image_index_min, _image_index_max, _dist_X, 
         dano.image_xscale = _xscale_dano;
         dano.image_yscale = _yscale_dano;
         
-        // [IMPORTANTE] Definir as forças de impacto do inimigo
-        dano.forca_knockback = 10; // Força que empurra o player
-        dano.tremor_hit = 4;       // Treme a tela ao acertar
+        // Propriedades do ataque (para tremer a tela se acertar o player)
+        dano.tremor_hit = 4;
         
         posso = false;
     }
     
-    // Destruindo o dano (igual)
+    // Destruindo Dano
     if(dano != noone && image_index >= _image_index_max){
         instance_destroy(dano);
         dano = noone;
     }
 }
 
-///@method morrendo(sprite_index)
+/// @method morrendo(sprite_index)
 morrendo = function(_sprite_index){
-	mid_velh = 0;
-	if (sprite_index != _sprite_index){
-		//iniciando o que for preciso para esse estado;
-		image_index = 0;
-	}
-		
-	sprite_index = _sprite_index;
-	//morrendo de verdade
-	if(image_index > image_number -1){
-		image_speed = 0;
-		image_alpha -= .01;
-			
-		if (image_alpha <= 0) instance_destroy();
-	}
-
+    // Garante que para de andar
+    velh = 0;
+    mid_velh = 0;
+    
+    if (sprite_index != _sprite_index){
+        image_index = 0;
+        sprite_index = _sprite_index;
+    }
+    
+    // Animação de morte e sumiço
+    if(image_index > image_number - 1){
+        image_speed = 0;
+        image_alpha -= 0.05; // Desaparece um pouco mais rápido
+        if (image_alpha <= 0) instance_destroy();
+    }
 }
 
 

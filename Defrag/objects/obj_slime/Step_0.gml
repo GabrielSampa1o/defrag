@@ -1,4 +1,3 @@
-event_inherited(); 
 
 // Gravidade
 var chao = place_meeting(x, y + 1, obj_bloco);
@@ -37,3 +36,5 @@ switch(estado){
         morrendo(spr_slime_death);
         break;
 }
+
+event_inherited(); 
