@@ -1,0 +1,43 @@
+{
+  "resourceType": "GMObject",
+  "resourceVersion": "1.0",
+  "name": "obj_boss",
+  "spriteId": {
+    "name": "spr_boss_andando",
+    "path": "sprites/spr_boss_andando/spr_boss_andando.yy",
+  },
+  "solid": false,
+  "visible": true,
+  "managed": true,
+  "spriteMaskId": {
+    "name": "spr_boss_base",
+    "path": "sprites/spr_boss_base/spr_boss_base.yy",
+  },
+  "persistent": false,
+  "parentObjectId": {
+    "name": "obj_inimigo_pai",
+    "path": "objects/obj_inimigo_pai/obj_inimigo_pai.yy",
+  },
+  "physicsObject": false,
+  "physicsSensor": false,
+  "physicsShape": 1,
+  "physicsGroup": 1,
+  "physicsDensity": 0.5,
+  "physicsRestitution": 0.1,
+  "physicsLinearDamping": 0.1,
+  "physicsAngularDamping": 0.1,
+  "physicsFriction": 0.2,
+  "physicsStartAwake": true,
+  "physicsKinematic": false,
+  "physicsShapePoints": [],
+  "eventList": [
+    {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":0,"collisionObjectId":null,},
+    {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":3,"collisionObjectId":null,},
+  ],
+  "properties": [],
+  "overriddenProperties": [],
+  "parent": {
+    "name": "boss",
+    "path": "folders/Objects/Inimigos/boss.yy",
+  },
+}

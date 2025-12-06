@@ -9,8 +9,11 @@
   "solid": false,
   "visible": true,
   "managed": true,
-  "spriteMaskId": null,
-  "persistent": false,
+  "spriteMaskId": {
+    "name": "spr_base",
+    "path": "sprites/spr_base/spr_base.yy",
+  },
+  "persistent": true,
   "parentObjectId": {
     "name": "obj_entidade",
     "path": "objects/obj_entidade/obj_entidade.yy",
@@ -30,6 +33,8 @@
   "eventList": [
     {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":0,"collisionObjectId":null,},
     {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":3,"collisionObjectId":null,},
+    {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":0,"eventType":8,"collisionObjectId":null,},
+    {"resourceType":"GMEvent","resourceVersion":"1.0","name":"","isDnD":false,"eventNum":64,"eventType":8,"collisionObjectId":null,},
   ],
   "properties": [],
   "overriddenProperties": [],
